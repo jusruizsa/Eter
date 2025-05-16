@@ -5,6 +5,7 @@ from events.event_manager import EventManager
 from diplomacy.alliances import forge_random_alliances
 from culture.global_culture import GlobalCulture
 from eras.era_manager import EraManager
+from religion.religion_manager import ReligionManager
 
 class World:
     def __init__(self, width, height, civilization_count):
@@ -15,6 +16,7 @@ class World:
         self.event_manager = EventManager()
         self.global_culture = GlobalCulture()
         self.era_manager = EraManager()
+        self.religion_manager = ReligionManager()
         self._populate(civilization_count)
 
     def _populate(self, count):
@@ -56,6 +58,11 @@ class World:
         self.global_culture.update(self.civilizations)
         self.global_culture.influence(self.civilizations, modifiers["culture_strength"])
 
+        for civ in self.civilizations:
+            self.religion_manager.maybe_fund_religion(civ)
+        self.religion_manager.spread_religion(self.civilizations)
+        self.religion_manager.update_dominant(self.civilizations)
+
         self.era_manager.advance()
 
     def _expand_civilization(self, civ, modifiers):
@@ -68,7 +75,6 @@ class World:
 
         random.shuffle(frontier)
         for target in frontier:
-            # personalidad expansiva y agresiva aumentan la expansión
             base_rate = modifiers["expansion_rate"]
             if civ.personality == "expansiva":
                 base_rate += 0.2

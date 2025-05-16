@@ -17,6 +17,7 @@ class Civilization:
             "expansiva", "defensiva", "diplomática", "aislada", "agresiva"
         ])
         self.history.append(f"Su personalidad es '{self.personality}'.")
+        self.religion = None
 
     def is_allied_with(self, other):
         return other.id in self.allies

@@ -16,14 +16,16 @@ def _main_loop(stdscr, world, turns):
             stdscr.addstr(1, 0, f"Era actual: {world.era_manager.era}")
             if world.global_culture.dominant_ideology:
                 stdscr.addstr(2, 0, f"Ideología dominante: {world.global_culture.dominant_ideology}")
-            stdscr.addstr(3, 0, "(p) Pausar | (q) Salir")
+            if world.religion_manager.dominant_religion:
+                stdscr.addstr(3, 0, f"Religión dominante: {world.religion_manager.dominant_religion}")
+            stdscr.addstr(4, 0, "(p) Pausar | (q) Salir")
 
             for y in range(world.height):
                 line = ""
                 for x in range(world.width):
                     region = world.grid[x][y]
                     line += region.civilization.symbol if region.civilization else "."
-                stdscr.addstr(y + 5, 0, line)
+                stdscr.addstr(y + 6, 0, line)
 
             stdscr.refresh()
 
