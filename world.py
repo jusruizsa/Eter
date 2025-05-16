@@ -51,10 +51,10 @@ class World:
         self._handle_splintering(modifiers)
         self._handle_collapse(modifiers)
         self.event_manager.trigger_random_event(self)
-        forge_random_alliances(self.civilizations)
+        self._handle_diplomacy()
 
         self.global_culture.update(self.civilizations)
-        self.global_culture.influence(self.civilizations)
+        self.global_culture.influence(self.civilizations, modifiers["culture_strength"])
 
         self.era_manager.advance()
 
@@ -68,8 +68,16 @@ class World:
 
         random.shuffle(frontier)
         for target in frontier:
-            if random.random() > modifiers["expansion_rate"]:
+            # personalidad expansiva y agresiva aumentan la expansión
+            base_rate = modifiers["expansion_rate"]
+            if civ.personality == "expansiva":
+                base_rate += 0.2
+            if civ.personality == "defensiva":
+                base_rate -= 0.1
+
+            if random.random() > base_rate:
                 continue
+
             if target.civilization is None:
                 target.civilization = civ
                 civ.regions.append(target)
@@ -77,7 +85,7 @@ class World:
                 return True
             elif target.civilization != civ:
                 defender = target.civilization
-                if civ.is_allied_with(defender):
+                if civ.is_allied_with(defender) and civ.personality != "agresiva":
                     continue
                 success = random.random() < 0.5
                 if success:
@@ -95,7 +103,10 @@ class World:
     def _handle_splintering(self, modifiers):
         candidates = [c for c in self.civilizations if len(c.regions) > 10]
         for civ in candidates:
-            if random.random() < modifiers["splinter_chance"]:
+            chance = modifiers["splinter_chance"]
+            if civ.personality == "aislada":
+                chance += 0.1
+            if random.random() < chance:
                 self._splinter_civilization(civ)
 
     def _splinter_civilization(self, civ):
@@ -114,7 +125,10 @@ class World:
 
     def _handle_collapse(self, modifiers):
         for civ in self.civilizations[:]:
-            if len(civ.regions) <= 2 and civ.inactive_turns >= 3 and random.random() < modifiers["collapse_chance"]:
+            chance = modifiers["collapse_chance"]
+            if civ.personality == "defensiva":
+                chance -= 0.05
+            if len(civ.regions) <= 2 and civ.inactive_turns >= 3 and random.random() < chance:
                 self._collapse_civilization(civ)
 
     def _collapse_civilization(self, civ):
@@ -122,6 +136,14 @@ class World:
             region.civilization = None
         civ.history.append(f"La civilización {civ.name} colapsa tras años de decadencia.")
         self.civilizations.remove(civ)
+
+    def _handle_diplomacy(self):
+        for civ in self.civilizations:
+            if civ.personality in ["diplomática", "defensiva"]:
+                others = [c for c in self.civilizations if c != civ and not civ.is_allied_with(c)]
+                if others:
+                    partner = random.choice(others)
+                    civ.form_alliance(partner)
 
     def _get_neighbors(self, x, y):
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]

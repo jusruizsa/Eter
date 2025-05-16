@@ -12,7 +12,11 @@ class Civilization:
         self.regions = [region]
         self.history = [f"Nace la civilización {self.name}, que {self.ideology}."]
         self.allies = set()
-        self.inactive_turns = 0  # turnos sin expansión
+        self.inactive_turns = 0
+        self.personality = random.choice([
+            "expansiva", "defensiva", "diplomática", "aislada", "agresiva"
+        ])
+        self.history.append(f"Su personalidad es '{self.personality}'.")
 
     def is_allied_with(self, other):
         return other.id in self.allies
