@@ -1,15 +1,15 @@
 import curses
 import time
 
-def run_simulation(world, turns):
-    curses.wrapper(_main_loop, world, turns)
+def run_simulation(world, turns, start_turn=1):
+    curses.wrapper(_main_loop, world, turns, start_turn)
 
-def _main_loop(stdscr, world, turns):
+def _main_loop(stdscr, world, turns, start_turn):
     curses.curs_set(0)
     stdscr.nodelay(True)
     paused = False
 
-    for turn in range(1, turns + 1):
+    for turn in range(start_turn, start_turn + turns):
         while True:
             stdscr.clear()
             stdscr.addstr(0, 0, f"Turno {turn} | Civilizaciones: {len(world.civilizations)}")

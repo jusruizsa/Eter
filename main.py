@@ -3,6 +3,7 @@ from views.civilization_view import show_civilizations
 from views.history_logger import log_history
 from views.curses_map import run_simulation
 from export.json_exporter import export_world_state
+from export.html_exporter import export_to_html
 
 
 if __name__ == "__main__":
@@ -22,3 +23,8 @@ if __name__ == "__main__":
 
     # Exportar estado completo del mundo
     export_world_state(world, TURNS)
+
+    # Exportar a HTML
+    export_to_html(world, TURNS)
+
+
