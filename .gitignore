@@ -1,0 +1,15 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Archivos de entorno o entorno virtual
+.venv/
+.env
+
+# Datos generados
+*.json
+*.html
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
