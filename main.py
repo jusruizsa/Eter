@@ -2,6 +2,7 @@ from world import World
 from views.civilization_view import show_civilizations
 from views.history_logger import log_history
 from views.curses_map import run_simulation
+from export.json_exporter import export_world_state
 
 if __name__ == "__main__":
     WIDTH = 20
@@ -13,7 +14,10 @@ if __name__ == "__main__":
 
     run_simulation(world, TURNS)
 
-    # Al final mostramos resumen
+    # Registro final
     show_civilizations(world.civilizations)
     for turn in range(1, TURNS + 1):
         log_history(turn, world.civilizations)
+
+    # Exportar estado completo del mundo
+    export_world_state(world, TURNS)
