@@ -4,6 +4,7 @@ from views.history_logger import log_history
 from views.curses_map import run_simulation
 from export.json_exporter import export_world_state
 
+
 if __name__ == "__main__":
     WIDTH = 20
     HEIGHT = 10

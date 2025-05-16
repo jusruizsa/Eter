@@ -4,6 +4,7 @@ import random
 from events.event_manager import EventManager
 from diplomacy.alliances import forge_random_alliances
 from culture.global_culture import GlobalCulture
+from eras.era_manager import EraManager
 
 class World:
     def __init__(self, width, height, civilization_count):
@@ -13,6 +14,7 @@ class World:
         self.civilizations = []
         self.event_manager = EventManager()
         self.global_culture = GlobalCulture()
+        self.era_manager = EraManager()
         self._populate(civilization_count)
 
     def _populate(self, count):
@@ -37,23 +39,26 @@ class World:
             print(line)
 
     def advance_turn(self):
+        modifiers = self.era_manager.get_modifiers()
+
         for civ in self.civilizations[:]:
-            expanded = self._expand_civilization(civ)
+            expanded = self._expand_civilization(civ, modifiers)
             if expanded:
                 civ.inactive_turns = 0
             else:
                 civ.inactive_turns += 1
 
-        self._handle_splintering()
-        self._handle_collapse()
+        self._handle_splintering(modifiers)
+        self._handle_collapse(modifiers)
         self.event_manager.trigger_random_event(self)
         forge_random_alliances(self.civilizations)
 
-        # Cultura global
         self.global_culture.update(self.civilizations)
         self.global_culture.influence(self.civilizations)
 
-    def _expand_civilization(self, civ):
+        self.era_manager.advance()
+
+    def _expand_civilization(self, civ, modifiers):
         frontier = []
         for region in civ.regions:
             neighbors = self._get_neighbors(region.x, region.y)
@@ -63,6 +68,8 @@ class World:
 
         random.shuffle(frontier)
         for target in frontier:
+            if random.random() > modifiers["expansion_rate"]:
+                continue
             if target.civilization is None:
                 target.civilization = civ
                 civ.regions.append(target)
@@ -85,10 +92,10 @@ class World:
                     return False
         return False
 
-    def _handle_splintering(self):
+    def _handle_splintering(self, modifiers):
         candidates = [c for c in self.civilizations if len(c.regions) > 10]
         for civ in candidates:
-            if random.random() < 0.2:
+            if random.random() < modifiers["splinter_chance"]:
                 self._splinter_civilization(civ)
 
     def _splinter_civilization(self, civ):
@@ -105,9 +112,9 @@ class World:
         new_civ.history.append(f"Surge como escisión de {civ.name}, trayendo consigo nuevas esperanzas.")
         self.civilizations.append(new_civ)
 
-    def _handle_collapse(self):
+    def _handle_collapse(self, modifiers):
         for civ in self.civilizations[:]:
-            if len(civ.regions) <= 2 and civ.inactive_turns >= 3:
+            if len(civ.regions) <= 2 and civ.inactive_turns >= 3 and random.random() < modifiers["collapse_chance"]:
                 self._collapse_civilization(civ)
 
     def _collapse_civilization(self, civ):
